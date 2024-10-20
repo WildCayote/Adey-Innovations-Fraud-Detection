@@ -47,3 +47,32 @@ class FeatureEngineering:
         """
 
         return data.dropna()
+
+    @staticmethod
+    def merge_ip_data(data: pd.DataFrame, ip_mapping: pd.DataFrame) -> pd.DataFrame:
+        """
+        A function that will try to find trends of frauds for each country and plot the top 5 countries with the most frauds.
+
+        Args:
+            data(pd.DataFrame): a dataframe that contains the fraud data
+            ip_mapping(pd.DataFrame): a dataframe that contains the ip mapping for each country
+        
+        Returns:
+            pd.DataFrame: the dataframe with the countires merged
+        """
+
+        # convert the ip_address into integers
+        data['ip_address'] = data['ip_address'].astype(dtype=int)
+        data.sort_values('ip_address', inplace=True)
+
+        # convert the ranges into integers
+        ip_mapping[['lower_bound_ip_address', 'upper_bound_ip_address']] = ip_mapping[['lower_bound_ip_address', 'upper_bound_ip_address']].astype(dtype=int)
+
+        # sort the lowerbound_ips
+        ip_mapping.sort_values('lower_bound_ip_address', inplace=True)
+
+        # merge the data
+        merged = pd.merge_asof(data, ip_mapping, left_on='ip_address', right_on='lower_bound_ip_address', direction='nearest')
+        data = merged.drop(columns=['upper_bound_ip_address', 'lower_bound_ip_address'])
+
+        return data
