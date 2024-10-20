@@ -134,3 +134,27 @@ class FeatureEngineering:
         data[numerical_columns] = scaler.transform(data[numerical_columns])
 
         return data, scaler
+
+    @staticmethod
+    def encode_categorical_data(data: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
+        """
+        A function that encodes the categorical data of a given dataframe.
+
+        Args:
+            data(pd.DataFrame): the dataframe whose categorical data are going to be encoded
+        
+        Returns:
+            tuple: the dataframe with its categorical data encoded and a dict containing encoders
+        """
+        # now use sklearn's label encoder for the remaining categorical data
+        remaining_categorical_cols = data.select_dtypes(include=['object', 'category']).columns
+
+        # go throught the columns and train and use the LabelEncoder for each of them
+        encoders = {}
+        encoder = LabelEncoder()
+        for column in remaining_categorical_cols:
+            col_encoder = encoder.fit(data[column])
+            data[column] = col_encoder.transform(data[column])
+            encoders[column] = encoder
+
+        return data, encoders
