@@ -76,3 +76,22 @@ class FeatureEngineering:
         data = merged.drop(columns=['upper_bound_ip_address', 'lower_bound_ip_address'])
 
         return data
+
+    @staticmethod
+    def calculate_frequency(data: pd.DataFrame) -> pd.DataFrame:
+        """
+        A function that will calcualte the frequency of purchases for a customer/user
+
+        Args:
+            data(pd.DataFrame): the dataframe we want NA values to be removed from
+
+        Returns:
+            pd.DataFrame: the dataframe with a new column called 'transaction_frequency' indicating users purchase frequency
+        """
+
+        user_freq = data.groupby('user_id').size()
+        data['transaction_frequency'] = data['user_id'].map(user_freq)
+
+        return data
+    
+    
