@@ -154,5 +154,10 @@ class EDAAnalyzer:
 
         # remove unused subplots
         for unused in range(axis_idx + 1, len(axes)):
-            plt.delaxes(ax=axes[unused])
-    
+            plt.delaxes(ax=axes[unused])    
+
+        # create a tight layout
+        plt.tight_layout(pad=4)
+
+        # show the plot
+        plt.show()
