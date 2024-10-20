@@ -173,3 +173,16 @@ class EDAAnalyzer:
         cmap = sns.color_palette("crest", as_cmap=True)
         ax = sns.heatmap(correlation_matrix, cmap=cmap, annot=True)
         ax.set_title("Correlation Matrix Heatmap", weight='bold', fontsize=20, pad=20)
+
+    def pair_plot(self) -> None:
+        """
+        A function that creates a pair plot between specified numerical columns
+        """
+
+        # define the numerical columns
+        numerical_cols = ['purchase_value', 'age', 'class']
+
+        sns.pairplot(self.data[numerical_cols], palette='husl', hue='class')
+        plt.show()
+
+    
