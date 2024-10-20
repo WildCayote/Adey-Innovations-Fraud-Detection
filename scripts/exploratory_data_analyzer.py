@@ -19,3 +19,13 @@ class EDAAnalyzer:
             data(pd.DataFrame): the dataframe that contains bank transactional data
         """
         self.data = data
+    
+    def basic_overview(self) -> None:
+        """
+        A function that creates basic overview of the data like - data type of columns, the shape of the data(i.e the number of rows and columns) 
+        """
+        # print out the shape
+        print(f"The data has a shape of: {self.data.shape}")
+
+        # print out the column info
+        print(self.data.info())
