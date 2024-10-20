@@ -109,4 +109,28 @@ class FeatureEngineering:
      
         return data
     
+    @staticmethod
+    def normalize_numerical_features(data: pd.DataFrame) -> tuple[pd.DataFrame, StandardScaler]:
+        """
+        A function that normalizes numerical data.
 
+        **Note: Make sure to run this before categorical encoding, because normalizing categorical encodings is very wrong**
+
+        Args:
+            data(pd.DataFrame): the data whose numerical values are to be normalized
+        
+        Returns:
+            pd.DataFrame: the dataframe with normalized numerical columns
+        """
+
+        # obtain the numerical columns
+        numerical_columns = list(data._get_numeric_data().columns)
+        numerical_columns = [col for col in numerical_columns if col not in ['user_id', 'ip_address', 'device_id']]
+
+        scaler = StandardScaler()
+        scaler = scaler.fit(data[numerical_columns])
+
+        # normalized data
+        data[numerical_columns] = scaler.transform(data[numerical_columns])
+
+        return data, scaler
