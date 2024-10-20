@@ -29,3 +29,9 @@ class EDAAnalyzer:
 
         # print out the column info
         print(self.data.info())
+    
+    def summary_statistics(self) -> None:
+        """
+        A function that generates 5 number summary(descriptive statistics) of the dataframe
+        """
+        print(self.data.describe())
