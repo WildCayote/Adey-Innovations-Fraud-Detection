@@ -78,7 +78,7 @@ class FeatureEngineering:
         return data
 
     @staticmethod
-    def calculate_frequency(data: pd.DataFrame) -> pd.DataFrame:
+    def calculate_frequency_velocity(data: pd.DataFrame) -> pd.DataFrame:
         """
         A function that will calcualte the frequency of purchases for a customer/user
 
@@ -88,10 +88,25 @@ class FeatureEngineering:
         Returns:
             pd.DataFrame: the dataframe with a new column called 'transaction_frequency' indicating users purchase frequency
         """
-
+        
+        # calculate the transaction frequency per user
         user_freq = data.groupby('user_id').size()
         data['transaction_frequency'] = data['user_id'].map(user_freq)
 
+        # convert the times into datetime type
+        data['signup_time'] = pd.to_datetime(data['signup_time'])
+        data['purchase_time'] = pd.to_datetime(data['purchase_time'])
+
+        # calculate the delay between signing up and purchasing
+        data['purchase_delay'] = (data['purchase_time'] - data['signup_time']).dt.total_seconds() / 3600
+
+        # calculate the transaction velocity
+        data['transcation_velocity'] = data['transaction_frequency'] / data['purchase_delay']
+
+        # calculate the transaction frequency per device
+        device_freq = data.groupby('device_id').size()
+        data['transaction_frequency_device'] = data['device_id'].map(device_freq)
+     
         return data
     
-    
+
