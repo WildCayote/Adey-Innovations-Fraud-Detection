@@ -47,3 +47,17 @@ class EDAAnalyzer:
         
         # print out the result
         print(f"These are columns with missing values greater than 0%:\n{missing}")
+
+    def determine_duplicate(self) -> None:
+        """
+        A function that finds the percentage of duplicate data/rows in the given data set. It prints the percentage of that duplicate data
+        """
+
+        # obtain ratio of dublicate data
+        duplicate_ratio = self.data.duplicated().mean()
+
+        # calcualte the percentage from ration
+        percentage = duplicate_ratio * 100
+
+        # print out the result
+        print(f"The data has {percentage}% duplicate data.")
