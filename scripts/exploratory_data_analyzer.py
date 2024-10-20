@@ -240,3 +240,44 @@ class EDAAnalyzer:
             # get the value of the coordinate
             value = outliers[outliers['Columns'] == columns[idx]]['Num. of Outliers'].values[0]
             ax.text(x=x_coordinate, y=y_coordinate, s=value, ha='center', va='bottom', weight='bold')
+
+    def investigate_country(self, ip_mapping: pd.DataFrame) -> None:
+        """
+        A function that will try to find trends of frauds for each country and plot the top 5 countries with the most frauds.
+
+        Args:
+            ip_mapping(pd.DataFrame): a dataframe that contains the ip mapping for each country
+        """
+
+        # convert the ip_address into integers
+        self.data['ip_address'] = self.data['ip_address'].astype(dtype=int)
+        self.data.sort_values('ip_address', inplace=True)
+
+        # convert the ranges into integers
+        ip_mapping[['lower_bound_ip_address', 'upper_bound_ip_address']] = ip_mapping[['lower_bound_ip_address', 'upper_bound_ip_address']].astype(dtype=int)
+
+        # sort the lowerbound_ips
+        ip_mapping.sort_values('lower_bound_ip_address', inplace=True)
+
+        # merge the data
+        merged = pd.merge_asof(self.data, ip_mapping, left_on='ip_address', right_on='lower_bound_ip_address', direction='nearest')
+        self.data = merged.drop(columns=['upper_bound_ip_address', 'lower_bound_ip_address'])
+
+        # Convert purchase_time to datetime format
+        self.data['purchase_time'] = pd.to_datetime(self.data['purchase_time'])
+
+        # Group fraudulent transactions by day and country
+        daily_fraud = self.data[self.data['class'] == 1].groupby([self.data['purchase_time'].dt.date, 'country']).size().unstack().fillna(0)
+
+        # Determine the top countries with the highest number of fraudulent transactions
+        top_countries = daily_fraud.sum().nlargest(5).index
+
+        # Plotting fraud trends over time for the top countries
+        plt.figure(figsize=(14, 7))
+        daily_fraud[top_countries].plot()
+        plt.title('Daily Fraudulent Transactions for The Top 5 Countries')
+        plt.xlabel('Date')
+        plt.ylabel('Number of Fraudulent Transactions')
+        plt.legend(title='Country')
+        plt.show()
+
