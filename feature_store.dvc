@@ -1,6 +1,6 @@
 outs:
-- md5: d751713988987e9331980363e24189ce.dir
-  size: 0
-  nfiles: 0
+- md5: 9fe7c9e2eeb06f238c173801d67eece5.dir
+  size: 211
+  nfiles: 2
   hash: md5
   path: feature_store
