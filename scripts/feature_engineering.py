@@ -151,8 +151,8 @@ class FeatureEngineering:
 
         # go throught the columns and train and use the LabelEncoder for each of them
         encoders = {}
-        encoder = LabelEncoder()
         for column in remaining_categorical_cols:
+            encoder = LabelEncoder()
             col_encoder = encoder.fit(data[column])
             data[column] = col_encoder.transform(data[column])
             encoders[column] = encoder
