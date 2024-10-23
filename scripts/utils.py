@@ -1,4 +1,6 @@
 import pickle
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
 
 def pickle_object(file_path: str, object: any) -> None:
     """
@@ -28,3 +30,24 @@ def load_pickle(file_path: str) -> object:
         obj = pickle.load(file=file)
     
     return obj
+
+def use_label_encoder(data: pd.Series, encoder: LabelEncoder) -> pd.Series:
+    """
+    A function that will return the encoding of labes given the lables and the respective encoder.
+    If the label class isn't found the character is encoded as -1.
+
+    Args:
+        data(pd.Series): the data to be encoded
+        encoder(LabelEncoder): the trained label encoder
+    
+    Returns:
+        pd.Series: the result of the labels encoding
+    """
+
+    # get the dictionary that is used to mapp labels
+    encoder_dict = dict(zip(encoder.classes_, encoder.transform(encoder.classes_)))
+
+    # encode the labels
+    results = data.apply(lambda x: encoder_dict.get(x, -1))
+
+    return results        
