@@ -5,3 +5,4 @@ data/
 /feature_store
 /scalers
 .env
+**/mlruns
