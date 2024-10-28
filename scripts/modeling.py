@@ -36,6 +36,24 @@ class ModelingPipeline:
     def create_mlflow_experiment(self, experiment_name:str):
         """"""
 
-    
-    
+    def create_experiment(self, experiment_name:str) -> str:
+        """
+        A method that will create an experiment in mlflow and return its id.
+        If an experiment with the name already exists it will return the id of it.
+
+        Args:
+            experiment_name(str): the name of the experiment to be created
+
+        ReturnsL
+            experiment_id(str): the id of the experiment created.
+        """
+
+        self.experiment_name = experiment_name
+        try:
+            experiment_id = mlflow.create_experiment(experiment_name)
+        except mlflow.exceptions.MlflowException:
+            search_result = mlflow.search_experiments(filter_string=f"name = '{experiment_name}'")
+            experiment_id = search_result[0].experiment_id
+        
+        return experiment_id
 
