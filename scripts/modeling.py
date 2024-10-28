@@ -33,9 +33,6 @@ class ModelingPipeline:
         # Set the tracking URI
         mlflow.set_tracking_uri(uri=tracking_uri)
     
-    def create_mlflow_experiment(self, experiment_name:str):
-        """"""
-
     def create_experiment(self, experiment_name:str) -> str:
         """
         A method that will create an experiment in mlflow and return its id.
