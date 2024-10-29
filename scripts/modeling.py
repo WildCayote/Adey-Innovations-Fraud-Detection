@@ -1,3 +1,4 @@
+import mlflow.artifacts
 import mlflow, optuna, warnings, shutil, os
 import pandas as pd
 import tensorflow as tf
@@ -372,6 +373,15 @@ class ModelingPipeline:
         Args:
             export_path(str): the path where you want the best model to be moved/copied to
         """
+        # find the experiment id
+        run_name = self.experiment_name
+        experiment_id = mlflow.search_experiments(filter_string=f'''name LIKE "{run_name}"''')[0].experiment_id
+        
+        # find the run
+        best_run = mlflow.search_runs(experiment_ids=[experiment_id], filter_string='''status = "FINISHED"''').sort_values(by='metrics.accuracy', ascending=False).iloc[0]
+        
+        # download the artifact
+        mlflow.artifacts.download_artifacts(artifact_uri=best_run['artifact_uri'], dst_path=export_path)
 
     def train_models(self) -> None:
         """
