@@ -6,3 +6,4 @@ data/
 /scalers
 .env
 **/mlruns
+/mlflow_runs
