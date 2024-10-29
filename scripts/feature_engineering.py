@@ -11,7 +11,7 @@ class FeatureEngineering:
     """
 
     @staticmethod
-    def extract_date_features(data: pd.DataFrame, date_column : str = 'TransactionStartTime') -> pd.DataFrame:
+    def extract_date_features(data: pd.DataFrame, date_column : str = 'purchase_time') -> pd.DataFrame:
         """
         A function that will breakdown the given date column into hour, day, month and year features.
 
@@ -24,13 +24,13 @@ class FeatureEngineering:
         """
 
         # convert the date data to a datetime object
-        data['purchase_time'] = pd.to_datetime(data['purchase_time'])
+        data[date_column] = pd.to_datetime(data[date_column])
 
         # break down the data
-        data['Hour'] = data['purchase_time'].dt.hour
-        data['Day'] = data['purchase_time'].dt.day
-        data['Month'] = data['purchase_time'].dt.month
-        data['Year'] = data['purchase_time'].dt.year
+        data['Hour'] = data[date_column].dt.hour
+        data['Day'] = data[date_column].dt.day
+        data['Month'] = data[date_column].dt.month
+        data['Year'] = data[date_column].dt.year
 
         return data
     
@@ -151,10 +151,44 @@ class FeatureEngineering:
 
         # go throught the columns and train and use the LabelEncoder for each of them
         encoders = {}
-        encoder = LabelEncoder()
         for column in remaining_categorical_cols:
+            encoder = LabelEncoder()
             col_encoder = encoder.fit(data[column])
             data[column] = col_encoder.transform(data[column])
             encoders[column] = encoder
 
         return data, encoders
+
+    @staticmethod
+    def feature_enginering_pipeline(data: pd.DataFrame, ip_mapping: pd.DataFrame) -> pd.DataFrame:
+        """
+        A method that chains all of the above methods into one feature engineering pipeline. 
+        It skips the numerical normalizer and categorical encoder. This is done inroder to prevent data leakes. 
+        A user should perfrom those steps after spliting the data into training and testing sets.
+
+        Args:
+            data(pd.DataFrame): the fraud data to go throught the pipeline
+            ip_mapping(pd.DataFrame): a dataframe that contains the ip mapping for each country
+
+        returns:
+            pd.DataFrame: the dataframe that results after passing through the pipeline
+        """
+
+        # merge the ip data with the fraud data
+        merged_data = FeatureEngineering.merge_ip_data(data=data, ip_mapping=ip_mapping)
+
+        # Calculate transaction frequency and velocity for users
+        data = FeatureEngineering.calculate_frequency_velocity(data=merged_data)
+
+        # Break down the date features
+        data = FeatureEngineering.extract_date_features(data=data)
+
+        # Convert the datetime object into nano seconds and then to an integer
+        datetime_columns = data.select_dtypes(include=['datetime64']).columns
+        for col in datetime_columns:
+            data[col] = data[col].astype('int64') // 10**9
+
+        # Handle missing values
+        data = FeatureEngineering.handle_missing_data(data=data)
+
+        return data
