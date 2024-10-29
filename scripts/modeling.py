@@ -1,10 +1,14 @@
-import mlflow, optuna, warnings
+import mlflow, optuna, warnings, shutil, os
 import pandas as pd
+import tensorflow as tf
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 from sklearn.neural_network import MLPClassifier
 from sklearn.tree import DecisionTreeClassifier
+from tensorflow.keras import layers, models
+from tensorflow.keras.callbacks import EarlyStopping
+from keras.api.layers import Input, LSTM, Conv1D, Dense, LSTM, Flatten, SimpleRNN
 
 warnings.simplefilter(action='ignore')
 
@@ -101,7 +105,7 @@ class ModelingPipeline:
             study = optuna.create_study(direction='maximize')
 
             # Run the hyper-parameter optimization
-            study.optimize(objective, n_trials=20)
+            study.optimize(objective, n_trials=7)
     
             # Use the best parameters to train the final model
             best_params = study.best_params
@@ -150,7 +154,7 @@ class ModelingPipeline:
     
         with mlflow.start_run(experiment_id=self.experiment_id, run_name="DecisionTree"):
             study = optuna.create_study(direction='maximize')
-            study.optimize(objective, n_trials=20)
+            study.optimize(objective, n_trials=7)
     
             best_params = study.best_params
             final_model = DecisionTreeClassifier(**best_params, random_state=7)
@@ -174,7 +178,6 @@ class ModelingPipeline:
             print(f"Best parameters for Decision Tree: {best_params}")
             print(f"Test accuracy with best parameters: {accuracy}")
     
-    
     def train_random_forest(self) -> None:
         """
         A method that trains a random forest for the dataset stored in the instance.
@@ -197,7 +200,7 @@ class ModelingPipeline:
     
         with mlflow.start_run(experiment_id=self.experiment_id, run_name="RandomForest"):
             study = optuna.create_study(direction='maximize')
-            study.optimize(objective, n_trials=20)
+            study.optimize(objective, n_trials=7)
     
             best_params = study.best_params
             final_model = RandomForestClassifier(**best_params, random_state=7)
@@ -220,56 +223,7 @@ class ModelingPipeline:
             print(f"#### Finished Training Random Forest ####")
             print(f"Best parameters for Random Forest: {best_params}")
             print(f"Test accuracy with best parameters: {accuracy}")
-    
-    
-    def train_gradient_booster(self) -> None:
-        """
-        A method that trains a gradient booster for the dataset stored in the instance.
-        """
-        experiment_id = mlflow.create_experiment(name="GradientBooster_Tuning")
-    
-        def objective(trial):
-            with mlflow.start_run(nested=True, run_name="GradientBooster", experiment_id=experiment_id):
-                learning_rate = trial.suggest_loguniform('learning_rate', 0.01, 1.0)
-                n_estimators = trial.suggest_int('n_estimators', 50, 500)
-                max_depth = trial.suggest_int('max_depth', 2, 32)
-    
-                model = GradientBoostingClassifier(learning_rate=learning_rate, n_estimators=n_estimators, max_depth=max_depth, random_state=7)
-                model.fit(self.x_train, self.y_train)
-    
-                accuracy = model.score(self.x_test, self.y_test)
-                mlflow.log_params({'learning_rate': learning_rate, 'n_estimators': n_estimators, 'max_depth': max_depth})
-                mlflow.log_metric('accuracy', accuracy)
-    
-            return accuracy
-    
-        with mlflow.start_run(experiment_id=self.experiment_id, run_name="GradientBooster"):
-            study = optuna.create_study(direction='maximize')
-            study.optimize(objective, n_trials=20)
-    
-            best_params = study.best_params
-            final_model = GradientBoostingClassifier(**best_params, random_state=7)
-            final_model.fit(self.x_train, self.y_train)
-    
-            mlflow.log_params(best_params)
-            mlflow.sklearn.log_model(final_model, "best_gradient_booster")
-    
-            predictions = final_model.predict(self.x_test)
-            accuracy = accuracy_score(self.y_test, predictions)
-            precision = precision_score(self.y_test, predictions)
-            f1 = f1_score(self.y_test, predictions)
-            recall = recall_score(self.y_test, predictions)
-    
-            mlflow.log_metric('accuracy', accuracy)
-            mlflow.log_metric('precision', precision)
-            mlflow.log_metric('f1_score', f1)
-            mlflow.log_metric('recall', recall)
-    
-            print(f"#### Finished Training Gradient Booster ####")
-            print(f"Best parameters for Gradient Booster: {best_params}")
-            print(f"Test accuracy with best parameters: {accuracy}")
-    
-    
+     
     def train_mlp(self) -> None:
         """
         A method that trains a multi-layer perceptron for the dataset stored in the instance.
@@ -293,7 +247,7 @@ class ModelingPipeline:
     
         with mlflow.start_run(experiment_id=self.experiment_id, run_name="MLP"):
             study = optuna.create_study(direction='maximize')
-            study.optimize(objective, n_trials=20)
+            study.optimize(objective, n_trials=7)
     
             best_params = study.best_params
             final_model = MLPClassifier(hidden_layer_sizes=(best_params['hidden_layer_sizes'],), alpha=best_params['alpha'], max_iter=best_params['max_iter'], random_state=7)
@@ -317,21 +271,99 @@ class ModelingPipeline:
             print(f"Best parameters for MLP: {best_params}")
             print(f"Test accuracy with best parameters: {accuracy}")
 
-
     def train_cnn(self) -> None:
         """
-        A method that trains a cnn for the dataset stored in the instance.
+        A method that trains a Convolutional Neural Network (CNN) for the dataset stored in the instance.
         """
+        
+        mlflow.tensorflow.autolog()
+        with mlflow.start_run(experiment_id=self.experiment_id, run_name="CNN"):
+            model = models.Sequential()
+            model.add(Input(shape=(self.x_train.shape[1], 1)))
+            model.add(Conv1D(filters=32, kernel_size=3, activation='relu'))
+            model.add(Flatten())
+            model.add(Dense(1, activation='sigmoid'))
+            model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+            history = model.fit(self.x_train, self.y_train, epochs=10, validation_data=(self.x_test, self.y_test),
+                      callbacks=[EarlyStopping(patience=3, restore_best_weights=True)])
+
+            predictions = (model.predict(self.x_test) > 0.5).astype("int32").flatten()
+            accuracy = accuracy_score(self.y_test, predictions)
+            precision = precision_score(self.y_test, predictions)
+            f1 = f1_score(self.y_test, predictions)
+            recall = recall_score(self.y_test, predictions)
+
+            mlflow.log_metrics({'accuracy': accuracy, 'precision': precision, 'f1_score': f1, 'recall': recall})
+            mlflow.tensorflow.log_model(model, "best_cnn")
+
+            print(f"#### Finished Training CNN ####")
+            print(f"Test accuracy: {accuracy}")
 
     def train_rnn(self) -> None:
         """
-        A method that trains a rnn for the dataset stored in the instance.
+        A method that trains a simple Recurrent Neural Network (RNN) for the dataset stored in the instance.
         """
-    
+        mlflow.tensorflow.autolog()
+        with mlflow.start_run(experiment_id=self.experiment_id, run_name="RNN"):
+            model = models.Sequential()
+            model.add(Input(shape=(self.x_train.shape[1], 1)))
+            model.add(SimpleRNN(units=32, activation='relu'))
+            model.add(Dense(1, activation='sigmoid'))
+            model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+            history = model.fit(
+                self.x_train, 
+                self.y_train, 
+                epochs=10, 
+                validation_data=(self.x_test, self.y_test),
+                callbacks=[EarlyStopping(patience=3, restore_best_weights=True)]
+            )
+
+            predictions = (model.predict(self.x_test) > 0.5).astype("int32").flatten()
+            accuracy = accuracy_score(self.y_test, predictions)
+            precision = precision_score(self.y_test, predictions)
+            f1 = f1_score(self.y_test, predictions)
+            recall = recall_score(self.y_test, predictions)
+
+            mlflow.log_metrics({
+                'accuracy': accuracy, 
+                'precision': precision, 
+                'f1_score': f1, 
+                'recall': recall
+            })
+            mlflow.tensorflow.log_model(model, "best_rnn")
+
+            print("#### Finished Training RNN ####")
+            print(f"Test accuracy: {accuracy}")
+
     def train_lstm(self) -> None:
         """
-        A method that trains a lstm for the dataset stored in the instance.
+        A method that trains a Long Short-Term Memory (LSTM) network for the dataset stored in the instance.
         """
+
+        mlflow.tensorflow.autolog()
+        with mlflow.start_run(experiment_id=self.experiment_id, run_name="LSTM"):
+            model = models.Sequential()
+            model.add(Input(shape=(self.x_train.shape[1], 1)))
+            model.add(LSTM(50))
+            model.add(Dense(1, activation='sigmoid'))
+            model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+            history = model.fit(self.x_train, self.y_train, epochs=7, validation_data=(self.x_test, self.y_test),
+                      callbacks=[EarlyStopping(patience=3, restore_best_weights=True)])
+
+            predictions = (model.predict(self.x_test) > 0.5).astype("int32").flatten()
+            accuracy = accuracy_score(self.y_test, predictions)
+            precision = precision_score(self.y_test, predictions)
+            f1 = f1_score(self.y_test, predictions)
+            recall = recall_score(self.y_test, predictions)
+
+            mlflow.log_metrics({'accuracy': accuracy, 'precision': precision, 'f1_score': f1, 'recall': recall})
+            mlflow.tensorflow.log_model(model, "best_lstm")
+
+            print(f"#### Finished Training LSTM ####")
+            print(f"Test accuracy: {accuracy}")
 
     def log_best_model(self, export_path:str) -> None:
         """
@@ -347,4 +379,12 @@ class ModelingPipeline:
 
         **Note:** You can add more methods to train specific models then add the method inside to be included with all of the other models.
         """
+        self.train_logistic_regressor()
+        self.train_decision_tree()
+        self.train_random_forest()
+        self.train_mlp()
+        self.train_cnn()
+        self.train_rnn()
+        self.train_lstm()
 
+        print("#### Finished Training All Models ####")
