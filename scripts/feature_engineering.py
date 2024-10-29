@@ -183,6 +183,11 @@ class FeatureEngineering:
         # Break down the date features
         data = FeatureEngineering.extract_date_features(data=data)
 
+        # Convert the datetime object into nano seconds and then to an integer
+        datetime_columns = data.select_dtypes(include=['datetime64']).columns
+        for col in datetime_columns:
+            data[col] = data[col].astype('int64') // 10**9
+
         # Handle missing values
         data = FeatureEngineering.handle_missing_data(data=data)
 
