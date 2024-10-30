@@ -1,4 +1,4 @@
-import pickle
+import pickle, mlflow, os
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
@@ -50,4 +50,26 @@ def use_label_encoder(data: pd.Series, encoder: LabelEncoder) -> pd.Series:
     # encode the labels
     results = data.apply(lambda x: encoder_dict.get(x, -1))
 
-    return results        
+    return results
+
+def load_mlflow_model(parent_folder: str):
+    """
+    A function that loads an mlflow model given its parent directory.
+
+    Args:
+        parent_folder(str): the path to the folder containing the mlflow model
+    
+    Returns:
+
+    """
+
+    # find the folder that has the word best in it.
+    directories = os.listdir(path=parent_folder)
+    for directory in directories:
+        if 'best' in directory and len(directory.split('_')) == 2:
+            model_path = os.path.join(parent_folder, directory)
+            break
+
+    model = mlflow.pyfunc.load_model(model_path)
+
+    return model
