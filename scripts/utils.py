@@ -60,7 +60,7 @@ def load_mlflow_model(parent_folder: str):
         parent_folder(str): the path to the folder containing the mlflow model
     
     Returns:
-
+        model: the loaded mlflow model
     """
 
     # find the folder that has the word best in it.
