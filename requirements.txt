@@ -11,3 +11,7 @@ tensorflow
 shap
 lime
 flask
+plotly
+requests
+dash
+dash-bootstrap-components
