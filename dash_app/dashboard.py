@@ -10,15 +10,15 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.FLATLY])
 
 # Set a new color palette for a fresh look
 color_palette = {
-    'background': '#F5F8FA',
-    'text': '#34495E',
-    'box_border': '#2980B9',
-    'transaction_bg': '#E8F8F5',  
-    'fraud_cases_bg': '#FDEDEC',  
-    'fraud_rate_bg': '#F9E79F',   
-    'box_text': '#5D6D7E',
+    'background': '#2C3E50',
+    'text': '#ECF0F1',
+    'box_border': '#34495E',
+    'transaction_bg': '#34495E',
+    'fraud_cases_bg': '#C0392B',
+    'fraud_rate_bg': '#F39C12',
+    'box_text': '#ECF0F1',
     'trend_line': '#16A085',
-    'device_chart': '#D35400',
+    'device_chart': '#2980B9',
     'browser_chart': '#8E44AD'
 }
 
