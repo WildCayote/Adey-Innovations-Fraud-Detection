@@ -23,7 +23,7 @@ color_palette = {
 }
 
 # Define the layout of the dashboard
-app.layout = html.Div(style={'backgroundColor': color_palette['background'], 'padding': '0px'}, children=[
+app.layout = html.Div(style={'backgroundColor': color_palette['background'], 'padding': '10px'}, children=[
     dbc.Container(fluid=False, children=[
         # Header section
         html.Div(style={'textAlign': 'center', 'padding': '20px'}, children=[
@@ -31,7 +31,7 @@ app.layout = html.Div(style={'backgroundColor': color_palette['background'], 'pa
             html.Hr(),
         ]),
 
-        # Summary boxes for key metrics
+        # Summary boxes for key metrics (two rows of boxes)
         dbc.Row([
             dbc.Col(dbc.Card([
                 dbc.CardBody([
@@ -39,10 +39,10 @@ app.layout = html.Div(style={'backgroundColor': color_palette['background'], 'pa
                     html.P('All Transactions', style={'fontSize': '14px', 'color': '#7D8A8A'}),
                 ])
             ], style={
-                'border': f'1px solid {color_palette["box_border"]}', 
-                'borderRadius': '5px', 
+                'border': f'1px solid {color_palette["box_border"]}',
+                'borderRadius': '5px',
                 'backgroundColor': color_palette['transaction_bg']
-            }), width=4),
+            }), width=6),
 
             dbc.Col(dbc.Card([
                 dbc.CardBody([
@@ -50,34 +50,32 @@ app.layout = html.Div(style={'backgroundColor': color_palette['background'], 'pa
                     html.P('Total Fraudulent Activities', style={'fontSize': '14px', 'color': '#7D8A8A'}),
                 ])
             ], style={
-                'border': f'1px solid {color_palette["box_border"]}', 
-                'borderRadius': '5px', 
+                'border': f'1px solid {color_palette["box_border"]}',
+                'borderRadius': '5px',
                 'backgroundColor': color_palette['fraud_cases_bg']
-            }), width=4),
+            }), width=6),
+        ], className="mb-2"),
 
+        dbc.Row([
             dbc.Col(dbc.Card([
                 dbc.CardBody([
                     html.H3(id='fraud-rate', style={'color': color_palette['box_text']}),
                     html.P('Fraud Rate', style={'fontSize': '14px', 'color': '#7D8A8A'}),
                 ])
             ], style={
-                'border': f'1px solid {color_palette["box_border"]}', 
-                'borderRadius': '5px', 
+                'border': f'1px solid {color_palette["box_border"]}',
+                'borderRadius': '5px',
                 'backgroundColor': color_palette['fraud_rate_bg']
-            }), width=4),
+            }), width=12),
         ], className="mb-4"),
 
-        # Trend analysis line chart
+        # Trend analysis chart (stacked with map)
         dbc.Row([
-            dbc.Col(dcc.Graph(id='trend-analysis-chart'), width=12),
+            dbc.Col(dcc.Graph(id='trend-analysis-chart'), width=6),
+            dbc.Col(dcc.Graph(id='fraud-locations-map', style={'height': '400px'}), width=6),
         ], className="mb-4"),
 
-        # Map visualization of fraud by location
-        dbc.Row([
-            dbc.Col(dcc.Graph(id='fraud-locations-map', style={'height': '600px'}), width=12),
-        ], className="mb-4"),
-
-        # Bar charts for top devices and browsers
+        # Device and browser charts (2x2 grid layout)
         dbc.Row([
             dbc.Col(dcc.Graph(id='top-devices-chart'), width=6),
             dbc.Col(dcc.Graph(id='top-browsers-chart'), width=6),
