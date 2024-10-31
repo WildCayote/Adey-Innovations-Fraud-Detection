@@ -16,13 +16,22 @@ The project focuses on enhancing security in e-commerce and bank credit transact
 
 ## Tools Used
 
-| Tool       | Purpose                                |
-| ---------- | -------------------------------------- |
-| DVC        | For handling data                      |
-| Pandas     | For data analysis                      |
-| matplotlib | For visualization                      |
-| Seaborn    | For enhacing matplotlib visualizations |
-| Numpy      | For numerical operations               |
+| Tool/Library                | Purpose                                                                         |
+| --------------------------- | ------------------------------------------------------------------------------- |
+| `dvc` & `dvc_gdrive`        | Version control and data management, allowing data to be stored on Google Drive |
+| `numpy`                     | Numerical operations and array manipulation for data preprocessing              |
+| `pandas`                    | Data manipulation and analysis, crucial for handling transaction data           |
+| `matplotlib` & `seaborn`    | Data visualization to identify transaction patterns and correlations            |
+| `scikit-learn`              | Machine learning models and evaluation metrics for fraud detection              |
+| `mlflow`                    | Tracking and managing machine learning experiments                              |
+| `optuna`                    | Hyperparameter optimization to boost model performance                          |
+| `tensorflow`                | Deep learning framework used for complex fraud detection models                 |
+| `shap`                      | Model interpretability via SHAP values, explaining model decisions              |
+| `lime`                      | Local interpretability for individual fraud predictions                         |
+| `flask`                     | Lightweight web framework for API deployment of models                          |
+| `plotly` & `dash`           | Interactive visualizations and dashboard for real-time fraud insights           |
+| `dash-bootstrap-components` | Enhanced UI components for a responsive, visually appealing dashboard           |
+| `requests`                  | Handling HTTP requests for integrations with external APIs                      |
 
 ## Contributor
 
