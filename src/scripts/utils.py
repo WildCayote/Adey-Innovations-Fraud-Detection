@@ -2,19 +2,6 @@ import pickle, mlflow, os
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-def pickle_object(file_path: str, object: any) -> None:
-    """
-    A function that saves a given python object into a pickle to the defined file path.
-
-    Args:
-        file_path(str): the path to save the pickle file into
-        object(any): the object to be saved as a pickle file
- 
-    """
-
-    with open(file=file_path, mode='wb') as file:
-        pickle.dump(obj=object, file=file)
-
 def load_pickle(file_path: str) -> object:
     """
     A function that will load a pickle file given its path.
@@ -73,3 +60,37 @@ def load_mlflow_model(parent_folder: str):
     model = mlflow.pyfunc.load_model(model_path)
 
     return model
+
+def load_input_features(feature_path: str, scaled_numerical_path: str) -> tuple:
+    """
+    A function that will load feature names found in the feature store saved as pickle files
+
+    Args:
+        feature_path(str): the path to the feature names stored as pickle files
+        scaled_numerical_path(str): the path to the scaled numerical feature names stored as pickle file
+    
+    Returns:
+        tuple: a tuple that contains the read in pickle objects
+    """
+
+    feature_names = load_pickle(file_path=feature_path)
+    scaled_columns = load_pickle(file_path=scaled_numerical_path)
+
+    return feature_names, scaled_columns
+
+def load_scalers_encoders(scaler_path: str, encoder_path: str) -> tuple:
+    """
+    A function that will load the categorical encoder and numerical data scaler pickle files
+
+    Args:
+        scaler_path(str): the path to the pickle file that contains the scaler object
+        encoder_path(str): the path to the pickle file that contains the encoder object
+    
+    Returns:
+        tuple: a tuple that contains the read in pickle objects
+    """
+
+    scaler_object = load_pickle(file_path=scaler_path)
+    encoder_object = load_pickle(file_path=encoder_path)
+
+    return scaler_object, encoder_object
