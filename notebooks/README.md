@@ -12,10 +12,10 @@ In this notebook I have included all my efforts to investigate the nature of the
 
 In this notebook I have included all my efforts of feature engineering. It contains the **Breakdown of Date feature**, **Handeling of Missing Values**, **Aggeregation of Data Per-Customer**, **Normalizing Numerical Data** and finally **Encoding of Categorical Features**.
 
-### 4. `modeling.ipynb`
+### 3. `modeling.ipynb`
 
 In this notebook I have included my efforts to train different classification model and then choose the best amongst them. I used **optuna** to choose the best parameters for the models, and used mlflow to log models and select the best one for the logged ones.
 
-### 5. `model_explanation.ipynb`
+### 4. `model_explanation.ipynb`
 
 In this notebook I have included my efforts to provide model explanation using SHAP and LIME modules.
